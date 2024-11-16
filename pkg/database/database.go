@@ -11,51 +11,57 @@ import (
 )
 
 type HSCategory struct {
-	UUID           uuid.UUID `json:"uuid"`
-	Category       string    `json:"category"`
-	Description    string    `json:"description"`
-	ParentClass    string    `json:"parent_class"`
-	DangerousClass string    `json:"dangerous_class"`
+	Category       string `json:"category"`
+	Description    string `json:"description"`
+	ParentClass    string `json:"parent_class"`
+	DangerousClass string `json:"dangerous_class"`
 }
 
 type HSCode struct {
-	UUID           uuid.UUID  `json:"uuid"`
 	Code           string     `json:"code"`
 	Description    string     `json:"description"`
 	ParentClass    string     `json:"parent_class"`
 	ParentCategory HSCategory `json:"parent_category"`
 }
 
-func GetHsCode(c telebot.Context, db *supabase.Client, code string) (HSCode, error) {
+type NewHSCode struct {
+	Code           string `json:"code"`
+	Description    string `json:"description"`
+	ParentClass    string `json:"parent_class"`
+	ParentCategory string `json:"parent_category"`
+}
+
+func WriteNewCode(db *supabase.Client, code, description, parentClass, parentCategory string) error {
+	insert := NewHSCode{
+		Code:           code,
+		Description:    description,
+		ParentClass:    parentClass,
+		ParentCategory: parentCategory,
+	}
+
+	fmt.Println(insert)
+	_, _, err := db.From("hs_code").
+		Insert(insert, true, "uuid", "representation", "exact").
+		Execute()
+	if err != nil {
+		return fmt.Errorf("cannot write new code, err: %v", err)
+	}
+	return nil
+}
+
+func GetHsCode(c telebot.Context, db *supabase.Client, code string) ([]HSCode, error) {
 	resp, _, err := db.From("hs_code").
 		Select("*, parent_category(*)", "exact", false).
 		Eq("code", code).
 		Execute()
 	if err != nil {
-		return HSCode{}, fmt.Errorf("cannot get hs code, error: %v", err)
+		return []HSCode{}, fmt.Errorf("cannot get hs code, error: %v", err)
 	}
 
 	var data []HSCode
 	json.Unmarshal(resp, &data)
 
-	if len(data) == 0 {
-		return HSCode{
-				Code:        "Code not available or does not exist",
-				Description: "Description is empty",
-				ParentCategory: HSCategory{
-					Description:    "Description is empty",
-					Category:       "Category not available or does not exist",
-					DangerousClass: "Dangerous class not available or does not exist",
-				},
-			},
-			nil
-	}
-
-	if data[0].ParentCategory.DangerousClass == "" {
-		data[0].ParentCategory.DangerousClass = "Does not have a danger class"
-	}
-
-	return data[0], nil
+	return data, nil
 }
 
 type RuSanctionList struct {
@@ -84,8 +90,5 @@ func GetRussianSunctionList(c telebot.Context, db *supabase.Client, code string)
 			},
 			nil
 	}
-
-	fmt.Println(data[0])
-
 	return data[0], nil
 }
