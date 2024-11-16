@@ -39,7 +39,6 @@ func WriteNewCode(db *supabase.Client, code, description, parentClass, parentCat
 		ParentCategory: parentCategory,
 	}
 
-	fmt.Println(insert)
 	_, _, err := db.From("hs_code").
 		Insert(insert, true, "uuid", "representation", "exact").
 		Execute()

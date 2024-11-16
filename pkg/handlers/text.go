@@ -28,25 +28,22 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 			text = strings.ReplaceAll(text, ".", "")
 			hs, err := database.GetHsCode(ctx, db, text)
 			if err != nil {
-				log.Printf("cannot get hs code, err: %v", err)
+				log.Println(err)
 			}
 
 			if len(hs) == 0 {
 				resp, err := external.GetTariffNumber(text)
 				if err != nil {
-					log.Printf("cannot connect to tariffnumber api, err: %v", err)
+					log.Println(err)
 					return ctx.Send("Sorry external api or database falls down")
 				}
 				if resp.Total == 0 {
 					return ctx.Send("Sorry this code does not exist in US and EU HS code database")
 				}
 
-				category := resp.Query[1:5]
-
-				ru, err := database.GetRussianSunctionList(ctx, db, category)
-
 				code := resp.Query
 				desc := clearDescription(resp.Suggestions[0].Value, code)
+				category := resp.Query[1:5]
 				parentClass := resp.Query[1:3]
 
 				err = database.WriteNewCode(db, code, desc, parentClass, category)
@@ -54,6 +51,7 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 					log.Println(err)
 				}
 
+				ru, err := database.GetRussianSunctionList(ctx, db, category)
 				WaitingForUserMessage[ctx.Message().Sender.ID] = false
 
 				return ctx.Reply(fmt.Sprintf("<b>Entered code:</b> %s\n\n<b>Code discription:</b> %s\n\n<b>Include in Russian sunction list from:</b> %s\n\n <b>Information get from:</b> %s\n\n We will soon update this code for dangerous class and more information",
@@ -69,6 +67,9 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 			}
 
 			ru, err := database.GetRussianSunctionList(ctx, db, hs[0].ParentCategory.Category)
+			if err != nil {
+				log.Println(err)
+			}
 
 			WaitingForUserMessage[ctx.Message().Sender.ID] = false
 			return ctx.Reply(fmt.Sprintf("<b>Entered code:</b> %s\n\n<b>Code discription:</b> %s\n\n<b>Dangerous class:</b> %v\n\n<b>Include in Russian sunction list from:</b> %s\n\n<b>Relate category:</b> %s\n\n<b>Category description:</b> %s",
@@ -86,7 +87,7 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 			var err error
 			ForwardedMsg, err = b.Forward(&telebot.Chat{ID: ChatID}, msg)
 			if err != nil {
-				log.Printf("cannot forvared message, err: %v", err)
+				log.Println(err)
 				AwaitngForward = false
 				return ctx.Reply(CannotForwardedMsg)
 			}
