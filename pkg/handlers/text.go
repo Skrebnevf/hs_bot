@@ -22,6 +22,19 @@ func clearDescription(input, code string) string {
 
 func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 	b.Handle(telebot.OnText, func(ctx telebot.Context) error {
+		if WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] {
+			org := ctx.Message().Text
+			org = strings.TrimSpace(org)
+
+			err := database.WriteUser(ctx, db, org)
+			if err != nil {
+				log.Println(err)
+			}
+
+			WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
+			return ctx.Send(OrgMsg)
+		}
+
 		if WaitingForUserMessage[ctx.Message().Sender.ID] {
 			text := ctx.Message().Text
 			text = strings.TrimSpace(text)
@@ -35,26 +48,37 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 				resp, err := external.GetTariffNumber(text)
 				if err != nil {
 					log.Println(err)
+					WaitingForUserMessage[ctx.Message().Sender.ID] = false
 					return ctx.Send("Sorry external api or database falls down")
 				}
 				if resp.Total == 0 {
+					WaitingForUserMessage[ctx.Message().Sender.ID] = false
+					return ctx.Send("Sorry this code does not exist in US and EU HS code database")
+				}
+				if resp.Query == "" {
+					WaitingForUserMessage[ctx.Message().Sender.ID] = false
 					return ctx.Send("Sorry this code does not exist in US and EU HS code database")
 				}
 
+				msg := ctx.Message()
 				code := resp.Query
 				desc := clearDescription(resp.Suggestions[0].Value, code)
-				category := resp.Query[1:5]
-				parentClass := resp.Query[1:3]
+				category := resp.Query[0:4]
+				parentClass := resp.Query[0:2]
 
 				err = database.WriteNewCode(db, code, desc, parentClass, category)
 				if err != nil {
 					log.Println(err)
 				}
 
+				ForwardedMsg, err = b.Send(&telebot.Chat{ID: ChatID}, msg.Text+" need to add decription and other options")
+				if err != nil {
+					log.Println(err)
+				}
+
 				ru, err := database.GetRussianSunctionList(ctx, db, category)
 				WaitingForUserMessage[ctx.Message().Sender.ID] = false
-
-				return ctx.Reply(fmt.Sprintf("<b>Entered code:</b> %s\n\n<b>Code discription:</b> %s\n\n<b>Include in Russian sunction list from:</b> %s\n\n <b>Information get from:</b> %s\n\n We will soon update this code for dangerous class and more information",
+				return ctx.Reply(fmt.Sprintf("Entered code: %s\n\nCode discription: %s\n\nInclude in Russian sunction list from: %s\n\nInformation get from: %s\n\n We will soon update this code for dangerous class and more information",
 					code,
 					desc,
 					ru.From,
@@ -72,7 +96,7 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 			}
 
 			WaitingForUserMessage[ctx.Message().Sender.ID] = false
-			return ctx.Reply(fmt.Sprintf("<b>Entered code:</b> %s\n\n<b>Code discription:</b> %s\n\n<b>Dangerous class:</b> %v\n\n<b>Include in Russian sunction list from:</b> %s\n\n<b>Relate category:</b> %s\n\n<b>Category description:</b> %s",
+			return ctx.Reply(fmt.Sprintf("Entered code: %s\n\nCode discription: %s\n\nDangerous class: %v\n\nInclude in Russian sunction list from: %s\n\nRelate category: %s\n\nCategory description: %s",
 				hs[0].Code,
 				hs[0].Description,
 				hs[0].ParentCategory.DangerousClass,
@@ -81,18 +105,18 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 				strings.ToLower(hs[0].ParentCategory.Description)))
 		}
 
-		if AwaitngForward {
+		if AwaitngForward[ctx.Message().Sender.ID] {
 			msg := ctx.Message()
 
 			var err error
 			ForwardedMsg, err = b.Forward(&telebot.Chat{ID: ChatID}, msg)
 			if err != nil {
 				log.Println(err)
-				AwaitngForward = false
+				AwaitngForward[ctx.Message().Sender.ID] = false
 				return ctx.Reply(CannotForwardedMsg)
 			}
 
-			AwaitngForward = false
+			AwaitngForward[ctx.Message().Sender.ID] = false
 			return ctx.Reply(CompletlyForwardedMsg)
 
 		}

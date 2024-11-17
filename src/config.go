@@ -61,7 +61,7 @@ func BotInit(token string) (*telebot.Bot, error) {
 	pref := telebot.Settings{
 		Token:     token,
 		Poller:    &telebot.LongPoller{Timeout: 10 * time.Second},
-		ParseMode: telebot.ModeHTML,
+		ParseMode: telebot.ModeMarkdown,
 	}
 
 	return telebot.NewBot(pref)

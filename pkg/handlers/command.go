@@ -1,8 +1,7 @@
 package handlers
 
 import (
-	"fmt"
-	external "github/skrebnevf/hs_code/pkg/extertal"
+	"github/skrebnevf/hs_code/pkg/database"
 	"log"
 
 	"github.com/supabase-community/supabase-go"
@@ -11,22 +10,31 @@ import (
 
 func CommandHandlers(b *telebot.Bot, db *supabase.Client) {
 	b.Handle("/start", func(ctx telebot.Context) error {
-		fmt.Println(ctx.Message().Chat.ID)
-		resp, err := external.GetTariffNumber("85177900")
+		WaitingForUserMessage[ctx.Message().Sender.ID] = false
+		AwaitngForward[ctx.Message().Sender.ID] = false
+		resp, err := database.GetUser(ctx, db)
 		if err != nil {
-			log.Println("cannot get tariff number, err: %v", err)
+			log.Println(err)
 		}
-		fmt.Println(resp.Suggestions[0].Value)
+
+		if len(resp) == 0 {
+			WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = true
+			return ctx.Reply(StartMsgWithOrgMsg)
+		}
 		return ctx.Reply(StartMsg)
 	})
 
 	b.Handle("/hs", func(ctx telebot.Context) error {
+		WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
+		AwaitngForward[ctx.Message().Sender.ID] = false
 		WaitingForUserMessage[ctx.Message().Sender.ID] = true
 		return ctx.Send(WaitingHsCodeMsg)
 	})
 
 	b.Handle("/help", func(ctx telebot.Context) error {
-		AwaitngForward = true
+		WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
+		WaitingForUserMessage[ctx.Message().Sender.ID] = false
+		AwaitngForward[ctx.Message().Sender.ID] = true
 		return ctx.Send(HelpCommandMsg)
 	})
 }
