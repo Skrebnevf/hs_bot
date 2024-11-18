@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/google/uuid"
 	"github.com/supabase-community/supabase-go"
 	"gopkg.in/telebot.v4"
 )
@@ -64,15 +63,17 @@ func GetHsCode(c telebot.Context, db *supabase.Client, code string) ([]HSCode, e
 }
 
 type RuSanctionList struct {
-	UUID     uuid.UUID `json:"uuid"`
-	From     string    `json:"from"`
-	Category string    `json:"category"`
+	From       string `json:"from"`
+	Source     string `json:"source"`
+	LastUpdate string `json:"last_update"`
+	Code       string `json:"code"`
+	Ban        string `json:"ban"`
 }
 
 func GetRussianSunctionList(c telebot.Context, db *supabase.Client, code string) (RuSanctionList, error) {
 	resp, _, err := db.From("ru_sanctions").
 		Select("*", "exact", false).
-		Eq("category", code).
+		Eq("code", code).
 		Execute()
 	if err != nil {
 		return RuSanctionList{}, fmt.Errorf("cannot get hs code, error: %v", err)

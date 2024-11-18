@@ -39,10 +39,17 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 			text := ctx.Message().Text
 			text = strings.TrimSpace(text)
 			text = strings.ReplaceAll(text, ".", "")
+
+			if len(text) < 6 {
+				return ctx.Send("Length of HS code should be 6 or more digits")
+			}
+
 			hs, err := database.GetHsCode(ctx, db, text)
 			if err != nil {
 				log.Println(err)
 			}
+
+			scode := text[0:6]
 
 			if len(hs) == 0 {
 				resp, err := external.GetTariffNumber(text)
@@ -76,12 +83,19 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 					log.Println(err)
 				}
 
-				ru, err := database.GetRussianSunctionList(ctx, db, category)
+				ru, err := database.GetRussianSunctionList(ctx, db, scode)
+				if err != nil {
+					log.Println("cannot get sanction list")
+				}
 				WaitingForUserMessage[ctx.Message().Sender.ID] = false
-				return ctx.Reply(fmt.Sprintf("Entered code: %s\n\nCode discription: %s\n\nInclude in Russian sunction list from: %s\n\nInformation get from: %s\n\n We will soon update this code for dangerous class and more information",
+				return ctx.Reply(fmt.Sprintf("Entered code: %s\n\nCode discription: %s\n\nInclude in Russian sanction list:\nFrom: %s\nOriginal code: %s\nBan: %s\nLast update: %s\nSource: %s\n\nInformation get from: %s\n\n We will soon update this code for dangerous class and more information",
 					code,
 					desc,
 					ru.From,
+					ru.Code,
+					ru.Ban,
+					ru.LastUpdate,
+					ru.Source,
 					resp.Suggestions[0].Data,
 				))
 			}
@@ -90,17 +104,23 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 				hs[0].ParentCategory.DangerousClass = "Does not have a danger class"
 			}
 
-			ru, err := database.GetRussianSunctionList(ctx, db, hs[0].ParentCategory.Category)
+			ru, err := database.GetRussianSunctionList(ctx, db, scode)
 			if err != nil {
 				log.Println(err)
 			}
 
+			fmt.Println(ru)
+
 			WaitingForUserMessage[ctx.Message().Sender.ID] = false
-			return ctx.Reply(fmt.Sprintf("Entered code: %s\n\nCode discription: %s\n\nDangerous class: %v\n\nInclude in Russian sunction list from: %s\n\nRelate category: %s\n\nCategory description: %s",
+			return ctx.Reply(fmt.Sprintf("Entered code: %s\n\nCode discription: %s\n\nDangerous class: %v\n\nInclude in Russian sunction list:\nFrom: %s\nOriginal code: %s\nBan: %s\nLast update: %s\nSource: %s\n\nRelate category: %s\n\nCategory description: %s",
 				hs[0].Code,
 				hs[0].Description,
 				hs[0].ParentCategory.DangerousClass,
 				ru.From,
+				ru.Code,
+				ru.Ban,
+				ru.LastUpdate,
+				ru.Source,
 				hs[0].ParentCategory.Category,
 				strings.ToLower(hs[0].ParentCategory.Description)))
 		}

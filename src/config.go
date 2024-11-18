@@ -59,9 +59,8 @@ func LoadConfig() (*Config, error) {
 
 func BotInit(token string) (*telebot.Bot, error) {
 	pref := telebot.Settings{
-		Token:     token,
-		Poller:    &telebot.LongPoller{Timeout: 10 * time.Second},
-		ParseMode: telebot.ModeMarkdown,
+		Token:  token,
+		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 	}
 
 	return telebot.NewBot(pref)
