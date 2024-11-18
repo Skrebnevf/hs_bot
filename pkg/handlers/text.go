@@ -109,8 +109,6 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 				log.Println(err)
 			}
 
-			fmt.Println(ru)
-
 			WaitingForUserMessage[ctx.Message().Sender.ID] = false
 			return ctx.Reply(fmt.Sprintf("Entered code: %s\n\nCode discription: %s\n\nDangerous class: %v\n\nInclude in Russian sunction list:\nFrom: %s\nOriginal code: %s\nBan: %s\nLast update: %s\nSource: %s\n\nRelate category: %s\n\nCategory description: %s",
 				hs[0].Code,
