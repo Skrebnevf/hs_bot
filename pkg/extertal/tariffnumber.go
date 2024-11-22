@@ -26,6 +26,7 @@ type Suggestion struct {
 var TariffNumberUrl = "https://www.tariffnumber.com/api/v1/cnSuggest"
 
 func GetTariffNumber(code string) (TariffNumberResponse, error) {
+	//TODO: Добавить контекст и ретраи
 	url := fmt.Sprintf("%s?term=%s&lang=en&year=2024", TariffNumberUrl, code)
 
 	resp, err := http.Get(url)

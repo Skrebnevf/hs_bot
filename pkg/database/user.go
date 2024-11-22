@@ -60,3 +60,26 @@ func GetUser(ctx telebot.Context, db *supabase.Client) ([]User, error) {
 
 	return u, nil
 }
+
+type UserLog struct {
+	Username string `json:"username"`
+	Message  string `json:"message"`
+}
+
+func WriteMsgLog(ctx telebot.Context, db *supabase.Client) error {
+	msg := ctx.Message().Text
+	usr := ctx.Sender().Username
+
+	insert := UserLog{
+		Username: usr,
+		Message:  msg,
+	}
+
+	_, _, err := db.From("user_log").
+		Insert(insert, true, "uuid", "representation", "exact").
+		Execute()
+	if err != nil {
+		return fmt.Errorf("cannot write user log, err: %v", err)
+	}
+	return nil
+}

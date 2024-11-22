@@ -3,7 +3,6 @@ package database
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/supabase-community/supabase-go"
 	"gopkg.in/telebot.v4"
@@ -60,35 +59,4 @@ func GetHsCode(c telebot.Context, db *supabase.Client, code string) ([]HSCode, e
 	json.Unmarshal(resp, &data)
 
 	return data, nil
-}
-
-type RuSanctionList struct {
-	From       string `json:"from"`
-	Source     string `json:"source"`
-	LastUpdate string `json:"last_update"`
-	Code       string `json:"code"`
-	Ban        string `json:"ban"`
-}
-
-func GetRussianSunctionList(c telebot.Context, db *supabase.Client, code string) (RuSanctionList, error) {
-	resp, _, err := db.From("ru_sanctions").
-		Select("*", "exact", false).
-		Eq("code", code).
-		Execute()
-	if err != nil {
-		return RuSanctionList{}, fmt.Errorf("cannot get hs code, error: %v", err)
-	}
-
-	var data []RuSanctionList
-	if err := json.Unmarshal(resp, &data); err != nil {
-		log.Println(err)
-	}
-
-	if len(data) == 0 {
-		return RuSanctionList{
-				From: "Not included in the sanctions list",
-			},
-			nil
-	}
-	return data[0], nil
 }
