@@ -7,7 +7,7 @@ import (
 	"github.com/supabase-community/supabase-go"
 )
 
-type RuSanctionCodeList struct {
+type SanctionCodeList struct {
 	From       string `json:"from"`
 	Source     string `json:"source"`
 	LastUpdate string `json:"last_update"`
@@ -15,8 +15,8 @@ type RuSanctionCodeList struct {
 	Ban        string `json:"ban"`
 }
 
-func GetSanctionByCode(db *supabase.Client, code string) ([]RuSanctionCodeList, error) {
-	resp, _, err := db.From("ru_sanctions_code").
+func GetSanctionByCode(db *supabase.Client, table, code string) ([]SanctionCodeList, error) {
+	resp, _, err := db.From(table).
 		Select("*", "exact", false).
 		Eq("code", code).
 		Execute()
@@ -24,7 +24,7 @@ func GetSanctionByCode(db *supabase.Client, code string) ([]RuSanctionCodeList, 
 		return nil, fmt.Errorf("cannot get hs code, error: %v", err)
 	}
 
-	var data []RuSanctionCodeList
+	var data []SanctionCodeList
 	if err := json.Unmarshal(resp, &data); err != nil {
 		return nil, fmt.Errorf("cannot parse code data from db, error: %v", err)
 	}
@@ -32,7 +32,7 @@ func GetSanctionByCode(db *supabase.Client, code string) ([]RuSanctionCodeList, 
 	return data, nil
 }
 
-type RuSanctionCategoryList struct {
+type SanctionCategoryList struct {
 	From       string `json:"from"`
 	Source     string `json:"source"`
 	LastUpdate string `json:"last_update"`
@@ -40,8 +40,8 @@ type RuSanctionCategoryList struct {
 	Ban        string `json:"ban"`
 }
 
-func GetSanctionByCategory(db *supabase.Client, category string) ([]RuSanctionCategoryList, error) {
-	resp, _, err := db.From("ru_sanction_category").
+func GetSanctionByCategory(db *supabase.Client, table, category string) ([]SanctionCategoryList, error) {
+	resp, _, err := db.From(table).
 		Select("*", "exact", false).
 		Eq("category", category).
 		Execute()
@@ -49,7 +49,7 @@ func GetSanctionByCategory(db *supabase.Client, category string) ([]RuSanctionCa
 		return nil, fmt.Errorf("cannot get sanction category, error: %v", err)
 	}
 
-	var data []RuSanctionCategoryList
+	var data []SanctionCategoryList
 	if err := json.Unmarshal(resp, &data); err != nil {
 		return nil, fmt.Errorf("cannot parse category data from db, error: %v", err)
 	}
@@ -57,7 +57,7 @@ func GetSanctionByCategory(db *supabase.Client, category string) ([]RuSanctionCa
 	return data, nil
 }
 
-type RuSanctionClassList struct {
+type SanctionClassList struct {
 	From       string `json:"from"`
 	Source     string `json:"source"`
 	LastUpdate string `json:"last_update"`
@@ -65,8 +65,8 @@ type RuSanctionClassList struct {
 	Ban        string `json:"ban"`
 }
 
-func GetSanctionByClass(db *supabase.Client, class string) ([]RuSanctionClassList, error) {
-	resp, _, err := db.From("ru_sanction_class").
+func GetSanctionByClass(db *supabase.Client, table, class string) ([]SanctionClassList, error) {
+	resp, _, err := db.From(table).
 		Select("*", "exact", false).
 		Eq("class", class).
 		Execute()
@@ -74,7 +74,7 @@ func GetSanctionByClass(db *supabase.Client, class string) ([]RuSanctionClassLis
 		return nil, fmt.Errorf("cannot get sanction class list, error: %v", err)
 	}
 
-	var data []RuSanctionClassList
+	var data []SanctionClassList
 	if err := json.Unmarshal(resp, &data); err != nil {
 		return nil, fmt.Errorf("cannot parse class data from db, error: %v", err)
 	}

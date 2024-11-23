@@ -20,7 +20,22 @@ func clearDescription(input, code string) string {
 }
 
 func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, class string) error {
-	checkSanction := func(description string, value string, getSanction func() (interface{}, error)) error {
+	tablesClass := []string{
+		"ru_sanction_class",
+		"bel_sanction_class",
+	}
+
+	tablesCategory := []string{
+		"ru_sanction_category",
+		"bel_sanction_category",
+	}
+
+	tablesCode := []string{
+		"ru_sanctions_code",
+		"bel_sanction_code",
+	}
+
+	checkSanction := func(description string, value string, table string, getSanction func() (interface{}, error)) error {
 		sanctions, err := getSanction()
 		if err != nil {
 			log.Println(err)
@@ -28,39 +43,60 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 		}
 
 		switch s := sanctions.(type) {
-		case []database.RuSanctionClassList:
+		case []database.SanctionClassList:
 			if len(s) > 0 {
-				return ctx.Send(fmt.Sprintf("Sanction:\nFrom: %s\nClass: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Class, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				switch table {
+				case "ru_sanction_class":
+					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nClass: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Class, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "bel_sanction_class":
+					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nClass: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Class, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				}
 			}
-		case []database.RuSanctionCategoryList:
+		case []database.SanctionCategoryList:
 			if len(s) > 0 {
-				return ctx.Send(fmt.Sprintf("Sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				switch table {
+				case "ru_sanction_category":
+					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "bel_sanction_category":
+					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				}
 			}
-		case []database.RuSanctionCodeList:
+		case []database.SanctionCodeList:
 			if len(s) > 0 {
-				return ctx.Send(fmt.Sprintf("Sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				switch table {
+				case "ru_sanctions_code":
+					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "bel_sanction_code":
+					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				}
 			}
 		}
 
 		return nil
 	}
 
-	if err := checkSanction("class", class, func() (interface{}, error) {
-		return database.GetSanctionByClass(db, class)
-	}); err != nil {
-		return err
+	for _, table := range tablesClass {
+		if err := checkSanction("class", class, table, func() (interface{}, error) {
+			return database.GetSanctionByClass(db, table, class)
+		}); err != nil {
+			return err
+		}
 	}
 
-	if err := checkSanction("category", category, func() (interface{}, error) {
-		return database.GetSanctionByCategory(db, category)
-	}); err != nil {
-		return err
+	for _, table := range tablesCategory {
+		if err := checkSanction("category", category, table, func() (interface{}, error) {
+			return database.GetSanctionByCategory(db, table, category)
+		}); err != nil {
+			return err
+		}
 	}
 
-	if err := checkSanction("code", code, func() (interface{}, error) {
-		return database.GetSanctionByCode(db, code)
-	}); err != nil {
-		return err
+	for _, table := range tablesCode {
+		if err := checkSanction("code", code, table, func() (interface{}, error) {
+			return database.GetSanctionByCode(db, table, code)
+		}); err != nil {
+			return err
+		}
 	}
 
 	return nil
