@@ -158,7 +158,7 @@ func handleUserMessage(ctx telebot.Context, db *supabase.Client, text string) er
 		dangerousClass = "Without dangerous class"
 	}
 
-	if err := ctx.Send(fmt.Sprintf("Entered code: %s\nDescription: %s\nCategory: %s\nDangerous Class: %s", text, desc, category, dangerousClass)); err != nil {
+	if err := ctx.Send(fmt.Sprintf("Entered code: %s\nDescription: %s\nCategory: %s\nDangerous Class: %s\n\nIn the next one(s) message(s) will be provided information about the presence of the code in the sanctions lists.\n\nIf there is no message, then the information about the sanctions is not in our database.\n\nYou can always check up-to-date information about EU sanctions at https://eur-lex.europa.eu/homepage.html?locale=en.", text, desc, category, dangerousClass)); err != nil {
 		return err
 	}
 	return handleSanctions(ctx, db, code, category, class)
