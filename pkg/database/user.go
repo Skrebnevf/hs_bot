@@ -49,7 +49,24 @@ func GetUser(ctx telebot.Context, db *supabase.Client) ([]User, error) {
 		Eq("id", stringID).
 		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("cannot get user from db, err: %v", err)
+		return nil, fmt.Errorf("cannot get users from db, err: %v", err)
+	}
+
+	var u []User
+	err = json.Unmarshal(resp, &u)
+	if err != nil {
+		return nil, fmt.Errorf("cannot unmarshal users data, err: %v", err)
+	}
+
+	return u, nil
+}
+
+func GetUsersID(db *supabase.Client) ([]User, error) {
+	resp, _, err := db.From("users").
+		Select("*", "exact", false).
+		Execute()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get users from db, err: %v", err)
 	}
 
 	var u []User

@@ -28,11 +28,13 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 	tablesCategory := []string{
 		"ru_sanction_category",
 		"bel_sanction_category",
+		"iran_sanction_category",
 	}
 
 	tablesCode := []string{
 		"ru_sanctions_code",
 		"bel_sanction_code",
+		"iran_sanction_code",
 	}
 
 	checkSanction := func(description string, value string, table string, getSanction func() (interface{}, error)) error {
@@ -59,6 +61,8 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "bel_sanction_category":
 					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "iran_sanction_category":
+					return ctx.Send(fmt.Sprintf("For Iran sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		case []database.SanctionCodeList:
@@ -68,6 +72,8 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "bel_sanction_code":
 					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "iran_sanctions_code":
+					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		}
@@ -219,6 +225,23 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 				return ctx.Reply(CannotForwardedMsg)
 			}
 			return ctx.Reply(CompletlyForwardedMsg)
+
+		case WaitingForMessage[userID]:
+			msg := ctx.Message().Text
+			WaitingForMessage[userID] = false
+			users, err := database.GetUsersID(db)
+			if err != nil {
+				log.Println(err)
+				return ctx.Reply("Sorry DB have error")
+			}
+
+			for _, user := range users {
+				_, err := ctx.Bot().Send(&telebot.Chat{ID: user.ID}, msg)
+				if err != nil {
+					log.Println(err)
+					return ctx.Reply("Cannot send update info message")
+				}
+			}
 
 		default:
 			err := performDBOperation(ctx, func() error {

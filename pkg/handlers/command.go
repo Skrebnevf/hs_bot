@@ -37,4 +37,16 @@ func CommandHandlers(b *telebot.Bot, db *supabase.Client) {
 		AwaitngForward[ctx.Message().Sender.ID] = true
 		return ctx.Send(HelpCommandMsg)
 	})
+
+	b.Handle("/updateinfo", func(ctx telebot.Context) error {
+		if ctx.Message().Chat.ID != ChatID {
+			return nil
+		} else {
+			WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
+			WaitingForUserMessage[ctx.Message().Sender.ID] = false
+			AwaitngForward[ctx.Message().Sender.ID] = false
+			WaitingForMessage[ctx.Message().Sender.ID] = true
+			return ctx.Send("Type info")
+		}
+	})
 }

@@ -3,6 +3,7 @@ package handlers
 import "gopkg.in/telebot.v4"
 
 var WaitingForUserMessage = map[int64]bool{}
+var WaitingForMessage = map[int64]bool{}
 var AwaitngForward = map[int64]bool{}
 var OriginalUserId int64
 var ForwardedMsg *telebot.Message
