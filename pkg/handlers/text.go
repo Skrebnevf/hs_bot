@@ -72,7 +72,7 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "bel_sanction_code":
 					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
-				case "iran_sanctions_code":
+				case "iran_sanction_code":
 					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
