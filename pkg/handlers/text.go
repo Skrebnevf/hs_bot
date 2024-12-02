@@ -23,21 +23,26 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 	tablesClass := []string{
 		"ru_sanction_class",
 		"bel_sanction_class",
+		"iraq_sanction_class",
 	}
 
 	tablesCategory := []string{
 		"ru_sanction_category",
 		"bel_sanction_category",
 		"iran_sanction_category",
+		"syria_sanction_category",
+		"iraq_sanction_category",
 	}
 
 	tablesCode := []string{
 		"ru_sanctions_code",
 		"bel_sanction_code",
 		"iran_sanction_code",
+		"syria_sanction_code",
+		"iraq_sanction_code",
 	}
 
-	checkSanction := func(description string, value string, table string, getSanction func() (interface{}, error)) error {
+	checkSanction := func(description string, table string, getSanction func() (interface{}, error)) error {
 		sanctions, err := getSanction()
 		if err != nil {
 			log.Println(err)
@@ -52,6 +57,8 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Russia sanction:\nFrom: %s\nClass: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Class, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "bel_sanction_class":
 					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nClass: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Class, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "iraq_sanction_class":
+					return ctx.Send(fmt.Sprintf("For Iraq sanction:\nFrom: %s\nClass: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Class, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		case []database.SanctionCategoryList:
@@ -63,6 +70,10 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "iran_sanction_category":
 					return ctx.Send(fmt.Sprintf("For Iran sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "syria_sanction_category":
+					return ctx.Send(fmt.Sprintf("For Syria sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "iraq_sanction_category":
+					return ctx.Send(fmt.Sprintf("For Iraq sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		case []database.SanctionCodeList:
@@ -74,6 +85,10 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Belarus sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "iran_sanction_code":
 					return ctx.Send(fmt.Sprintf("For Iran sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "syria_sanction_code":
+					return ctx.Send(fmt.Sprintf("For Syria sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "iraq_sanction_code":
+					return ctx.Send(fmt.Sprintf("For Iraq sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		}
@@ -82,7 +97,7 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 	}
 
 	for _, table := range tablesClass {
-		if err := checkSanction("class", class, table, func() (interface{}, error) {
+		if err := checkSanction("class", table, func() (interface{}, error) {
 			return database.GetSanctionByClass(db, table, class)
 		}); err != nil {
 			return err
@@ -90,7 +105,7 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 	}
 
 	for _, table := range tablesCategory {
-		if err := checkSanction("category", category, table, func() (interface{}, error) {
+		if err := checkSanction("category", table, func() (interface{}, error) {
 			return database.GetSanctionByCategory(db, table, category)
 		}); err != nil {
 			return err
@@ -98,7 +113,7 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 	}
 
 	for _, table := range tablesCode {
-		if err := checkSanction("code", code, table, func() (interface{}, error) {
+		if err := checkSanction("code", table, func() (interface{}, error) {
 			return database.GetSanctionByCode(db, table, code)
 		}); err != nil {
 			return err
@@ -217,14 +232,14 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 				return handleUserMessage(ctx, db, ctx.Message().Text)
 			}
 
-		case AwaitngForward[userID]:
-			AwaitngForward[userID] = false
+		case AwaitingForward[userID]:
+			AwaitingForward[userID] = false
 			_, err := b.Forward(&telebot.Chat{ID: ChatID}, ctx.Message())
 			if err != nil {
 				log.Println(err)
 				return ctx.Reply(CannotForwardedMsg)
 			}
-			return ctx.Reply(CompletlyForwardedMsg)
+			return ctx.Reply(CompletelyForwardedMsg)
 
 		case WaitingForMessage[userID]:
 			msg := ctx.Message().Text

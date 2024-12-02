@@ -35,7 +35,7 @@ func LoadConfig() (*Config, error) {
 	}
 
 	if err := godotenv.Load(env); err != nil {
-		log.Printf("Warning: could not load .env file, using default environment variables")
+		log.Printf("Warning: could not load .env file, using default environment variables, err: %s", err)
 	}
 
 	if token := os.Getenv("TOKEN"); token != "" {

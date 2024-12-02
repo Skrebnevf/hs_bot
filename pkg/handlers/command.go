@@ -11,7 +11,7 @@ import (
 func CommandHandlers(b *telebot.Bot, db *supabase.Client) {
 	b.Handle("/start", func(ctx telebot.Context) error {
 		WaitingForUserMessage[ctx.Message().Sender.ID] = false
-		AwaitngForward[ctx.Message().Sender.ID] = false
+		AwaitingForward[ctx.Message().Sender.ID] = false
 		resp, err := database.GetUser(ctx, db)
 		if err != nil {
 			log.Println(err)
@@ -26,7 +26,7 @@ func CommandHandlers(b *telebot.Bot, db *supabase.Client) {
 
 	b.Handle("/hs", func(ctx telebot.Context) error {
 		WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
-		AwaitngForward[ctx.Message().Sender.ID] = false
+		AwaitingForward[ctx.Message().Sender.ID] = false
 		WaitingForUserMessage[ctx.Message().Sender.ID] = true
 		return ctx.Send(WaitingHsCodeMsg)
 	})
@@ -34,7 +34,7 @@ func CommandHandlers(b *telebot.Bot, db *supabase.Client) {
 	b.Handle("/help", func(ctx telebot.Context) error {
 		WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
 		WaitingForUserMessage[ctx.Message().Sender.ID] = false
-		AwaitngForward[ctx.Message().Sender.ID] = true
+		AwaitingForward[ctx.Message().Sender.ID] = true
 		return ctx.Send(HelpCommandMsg)
 	})
 
@@ -44,7 +44,7 @@ func CommandHandlers(b *telebot.Bot, db *supabase.Client) {
 		} else {
 			WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
 			WaitingForUserMessage[ctx.Message().Sender.ID] = false
-			AwaitngForward[ctx.Message().Sender.ID] = false
+			AwaitingForward[ctx.Message().Sender.ID] = false
 			WaitingForMessage[ctx.Message().Sender.ID] = true
 			return ctx.Send("Type info")
 		}

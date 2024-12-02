@@ -25,7 +25,7 @@ func GetSanctionByCode(db *supabase.Client, table, code string) ([]SanctionCodeL
 	}
 
 	var data []SanctionCodeList
-	if err := json.Unmarshal(resp, &data); err != nil {
+	if err = json.Unmarshal(resp, &data); err != nil {
 		return nil, fmt.Errorf("cannot parse code data from db, error: %v", err)
 	}
 
