@@ -31,6 +31,14 @@ func CommandHandlers(b *telebot.Bot, db *supabase.Client) {
 		return ctx.Send(WaitingHsCodeMsg)
 	})
 
+	b.Handle("/filter", func(ctx telebot.Context) error {
+		WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
+		AwaitingForward[ctx.Message().Sender.ID] = false
+		WaitingForUserMessage[ctx.Message().Sender.ID] = false
+		WaitingForFilterMessage[ctx.Message().Sender.ID] = true
+		return ctx.Send("Type filter word")
+	})
+
 	b.Handle("/help", func(ctx telebot.Context) error {
 		WaitingForOrganizationInfoMsg[ctx.Message().Sender.ID] = false
 		WaitingForUserMessage[ctx.Message().Sender.ID] = false

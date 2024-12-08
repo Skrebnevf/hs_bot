@@ -129,7 +129,7 @@ func handleUserMessage(ctx telebot.Context, db *supabase.Client, text string) er
 		return ctx.Send("Length of HS code should be 6 or more digits")
 	}
 
-	hs, err := database.GetHsCode(ctx, db, text)
+	hs, err := database.GetHsCode(db, text)
 	if err != nil {
 		log.Println(err)
 		return ctx.Send("Sorry something went wrong, database is not available")
@@ -251,11 +251,24 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 			}
 
 			for _, user := range users {
-				_, err := ctx.Bot().Send(&telebot.Chat{ID: user.ID}, msg)
+				_, err = ctx.Bot().Send(&telebot.Chat{ID: user.ID}, msg)
 				if err != nil {
 					log.Println(err)
 					return ctx.Reply("Cannot send update info message")
 				}
+			}
+
+		case WaitingForFilterMessage[userID]:
+			WaitingForFilterMessage[userID] = false
+			msg := ctx.Message().Text
+			descriptions, err := database.GesHsCodeByDescription(db, msg)
+			if err != nil {
+				log.Println(err)
+				return ctx.Reply("Sorry DB have error")
+			}
+
+			for _, description := range descriptions {
+				ctx.Reply(fmt.Sprintf("Code: %s\nDescription: %s", description.Code, description.Description))
 			}
 
 		default:

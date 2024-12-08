@@ -5,6 +5,7 @@ var WaitingForMessage = map[int64]bool{}
 var AwaitingForward = map[int64]bool{}
 var ChatID int64
 var WaitingForOrganizationInfoMsg = map[int64]bool{}
+var WaitingForFilterMessage = map[int64]bool{}
 
 var (
 	StartMsg               = "Hi. I am a bot that can help to find out details about HS code and give out certain information about it such as:\n–whether this code is categorized on the sanctions list\n–category danger class."

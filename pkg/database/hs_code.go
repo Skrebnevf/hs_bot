@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/supabase-community/supabase-go"
-	"gopkg.in/telebot.v4"
 )
 
 type HSCategory struct {
@@ -46,7 +45,23 @@ func WriteNewCode(db *supabase.Client, code, description, parentClass, parentCat
 	return nil
 }
 
-func GetHsCode(c telebot.Context, db *supabase.Client, code string) ([]HSCode, error) {
+func GesHsCodeByDescription(db *supabase.Client, filter string) ([]NewHSCode, error) {
+	resp, _, err := db.From("hs_code").
+		Select("*", "exact", false).
+		Filter("description", "ilike", "%"+filter+"%").
+		Execute()
+	if err != nil {
+		return []NewHSCode{}, fmt.Errorf("cannot get hs code, error: %v", err)
+	}
+
+	var data []NewHSCode
+	if err = json.Unmarshal(resp, &data); err != nil {
+		return nil, fmt.Errorf("cannot unmarshal hs code, error: %v", err)
+	}
+
+	return data, nil
+}
+func GetHsCode(db *supabase.Client, code string) ([]HSCode, error) {
 	resp, _, err := db.From("hs_code").
 		Select("*, parent_category(*)", "exact", false).
 		Eq("code", code).
@@ -56,7 +71,9 @@ func GetHsCode(c telebot.Context, db *supabase.Client, code string) ([]HSCode, e
 	}
 
 	var data []HSCode
-	json.Unmarshal(resp, &data)
+	if err = json.Unmarshal(resp, &data); err != nil {
+		return []HSCode{}, fmt.Errorf("cannot unmarshal hs code, error: %v", err)
+	}
 
 	return data, nil
 }

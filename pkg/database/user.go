@@ -43,7 +43,7 @@ func WriteUser(ctx telebot.Context, db *supabase.Client, org string) error {
 
 func GetUser(ctx telebot.Context, db *supabase.Client) ([]User, error) {
 	id := ctx.Sender().ID
-	stringID := strconv.FormatInt(int64(id), 10)
+	stringID := strconv.FormatInt(id, 10)
 	resp, _, err := db.From("users").
 		Select("id", "exact", false).
 		Eq("id", stringID).

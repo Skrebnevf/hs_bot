@@ -50,7 +50,7 @@ func GetSanctionByCategory(db *supabase.Client, table, category string) ([]Sanct
 	}
 
 	var data []SanctionCategoryList
-	if err := json.Unmarshal(resp, &data); err != nil {
+	if err = json.Unmarshal(resp, &data); err != nil {
 		return nil, fmt.Errorf("cannot parse category data from db, error: %v", err)
 	}
 
@@ -75,7 +75,7 @@ func GetSanctionByClass(db *supabase.Client, table, class string) ([]SanctionCla
 	}
 
 	var data []SanctionClassList
-	if err := json.Unmarshal(resp, &data); err != nil {
+	if err = json.Unmarshal(resp, &data); err != nil {
 		return nil, fmt.Errorf("cannot parse class data from db, error: %v", err)
 	}
 
