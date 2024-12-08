@@ -45,13 +45,13 @@ func WriteNewCode(db *supabase.Client, code, description, parentClass, parentCat
 	return nil
 }
 
-func GesHsCodeByDescription(db *supabase.Client, filter string) ([]NewHSCode, error) {
+func GetHsCodeByDescription(db *supabase.Client, filter string) ([]NewHSCode, error) {
 	resp, _, err := db.From("hs_code").
 		Select("*", "exact", false).
 		Filter("description", "ilike", "%"+filter+"%").
 		Execute()
 	if err != nil {
-		return []NewHSCode{}, fmt.Errorf("cannot get hs code, error: %v", err)
+		return nil, fmt.Errorf("cannot get hs code, error: %v", err)
 	}
 
 	var data []NewHSCode
@@ -61,19 +61,18 @@ func GesHsCodeByDescription(db *supabase.Client, filter string) ([]NewHSCode, er
 
 	return data, nil
 }
+
 func GetHsCode(db *supabase.Client, code string) ([]HSCode, error) {
 	resp, _, err := db.From("hs_code").
 		Select("*, parent_category(*)", "exact", false).
 		Eq("code", code).
 		Execute()
 	if err != nil {
-		return []HSCode{}, fmt.Errorf("cannot get hs code, error: %v", err)
+		return nil, fmt.Errorf("cannot get hs code, error: %v", err)
 	}
 
 	var data []HSCode
-	if err = json.Unmarshal(resp, &data); err != nil {
-		return []HSCode{}, fmt.Errorf("cannot unmarshal hs code, error: %v", err)
-	}
+	json.Unmarshal(resp, &data)
 
 	return data, nil
 }

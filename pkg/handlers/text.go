@@ -32,6 +32,7 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 		"iran_sanction_category",
 		"syria_sanction_category",
 		"iraq_sanction_category",
+		"prohibition_from_russia_category",
 	}
 
 	tablesCode := []string{
@@ -40,6 +41,7 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 		"iran_sanction_code",
 		"syria_sanction_code",
 		"iraq_sanction_code",
+		"prohibition_from_russia_code",
 	}
 
 	checkSanction := func(description string, table string, getSanction func() (interface{}, error)) error {
@@ -74,6 +76,8 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Syria sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "iraq_sanction_category":
 					return ctx.Send(fmt.Sprintf("For Iraq sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "prohibition_from_russia_category":
+					return ctx.Send(fmt.Sprintf("Export ban from Russia:\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		case []database.SanctionCodeList:
@@ -89,6 +93,8 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Syria sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "iraq_sanction_code":
 					return ctx.Send(fmt.Sprintf("For Iraq sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "prohibition_from_russia_code":
+					return ctx.Send(fmt.Sprintf("Export ban from Russia:\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		}
@@ -261,14 +267,14 @@ func TextHandlers(b *telebot.Bot, db *supabase.Client) {
 		case WaitingForFilterMessage[userID]:
 			WaitingForFilterMessage[userID] = false
 			msg := ctx.Message().Text
-			descriptions, err := database.GesHsCodeByDescription(db, msg)
+			descriptions, err := database.GetHsCodeByDescription(db, msg)
 			if err != nil {
 				log.Println(err)
 				return ctx.Reply("Sorry DB have error")
 			}
 
 			for _, description := range descriptions {
-				ctx.Reply(fmt.Sprintf("Code: %s\nDescription: %s", description.Code, description.Description))
+				ctx.Send(fmt.Sprintf("Code: %s\nDescription: %s", description.Code, description.Description))
 			}
 
 		default:
