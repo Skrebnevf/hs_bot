@@ -13,6 +13,8 @@ import (
 	"gopkg.in/telebot.v4"
 )
 
+var country = "Agricultural products, raw materials and foodstuffs, the country of origin of which is the United States of Kingdom of Norway, Ukraine, Republic of Albania, Montenegro, Republic of Iceland, Principality of Liechtenstein, the United Kingdom of Great Britain and Northern Ireland, and New Zealand ban to import into Russia"
+
 func clearDescription(input, code string) string {
 	re := regexp.MustCompile(`<[^>]*>`)
 	clearHtml := re.ReplaceAllString(input, "")
@@ -33,6 +35,7 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 		"syria_sanction_category",
 		"iraq_sanction_category",
 		"prohibition_from_russia_category",
+		"ru_import_ban_category",
 	}
 
 	tablesCode := []string{
@@ -42,6 +45,7 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 		"syria_sanction_code",
 		"iraq_sanction_code",
 		"prohibition_from_russia_code",
+		"ru_import_ban_code",
 	}
 
 	checkSanction := func(description string, table string, getSanction func() (interface{}, error)) error {
@@ -78,6 +82,8 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Iraq sanction:\nFrom: %s\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "prohibition_from_russia_category":
 					return ctx.Send(fmt.Sprintf("Export ban from Russia:\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "ru_import_ban_category":
+					return ctx.Send(fmt.Sprintf("%s:\nCategory: %s\nBan: %s\nLast Update: %s\nSource: %s", country, s[0].Category, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		case []database.SanctionCodeList:
@@ -95,6 +101,8 @@ func handleSanctions(ctx telebot.Context, db *supabase.Client, code, category, c
 					return ctx.Send(fmt.Sprintf("For Iraq sanction:\nFrom: %s\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].From, s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				case "prohibition_from_russia_code":
 					return ctx.Send(fmt.Sprintf("Export ban from Russia:\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
+				case "ru_import_ban_code":
+					return ctx.Send(fmt.Sprintf("Ban on imports into Russia:\nCode: %s\nBan: %s\nLast Update: %s\nSource: %s", s[0].Code, s[0].Ban, s[0].LastUpdate, s[0].Source))
 				}
 			}
 		}
