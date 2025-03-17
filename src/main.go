@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"github/skrebnevf/hs_code/pkg/handlers"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/supabase-community/supabase-go"
 )
@@ -45,6 +47,23 @@ func main() {
 		log.Printf("Listening on port %s for health checks...", port)
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatal(err)
+		}
+	}()
+
+	go func() {
+		for {
+			resp, err := http.Get(config.BotUrl)
+			if err != nil {
+				log.Printf("Request error: %v", err)
+			} else {
+				body, err := io.ReadAll(resp.Body)
+				if err != nil {
+					log.Printf("cannot get body request: %v", err)
+				} else {
+					log.Printf("Resp: %s, Time %v", body, time.Now())
+				}
+			}
+			time.Sleep(1 * time.Minute)
 		}
 	}()
 

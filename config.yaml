@@ -1,4 +1,5 @@
 token: ""
+bot_url: ""
 chat_id: ""
 db:
   db_url: ""

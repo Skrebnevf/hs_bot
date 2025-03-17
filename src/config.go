@@ -17,6 +17,7 @@ var env = "./.env"
 type Config struct {
 	Token  string `yaml:"token"`
 	ChatId string `yaml:"chat_id"`
+	BotUrl string `yaml:"bot_url"`
 	DB     struct {
 		Url string `yaml:"db_url"`
 		Key string `yaml:"db_key"`
@@ -44,6 +45,10 @@ func LoadConfig() (*Config, error) {
 
 	if chatId := os.Getenv("CHAT_ID"); chatId != "" {
 		config.ChatId = chatId
+	}
+
+	if botUrl := os.Getenv("BOT_URL"); botUrl != "" {
+		config.BotUrl = botUrl
 	}
 
 	if url := os.Getenv("DB_URL"); url != "" {
